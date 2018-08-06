@@ -10,8 +10,10 @@ import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.sin
-
-
+import android.content.Context.VIBRATOR_SERVICE
+import android.os.VibrationEffect
+import android.os.VibrationEffect.DEFAULT_AMPLITUDE
+import android.os.Vibrator
 
 
 class CanvasDraw(context: Context, attr: AttributeSet?) : View(context, attr) {
@@ -29,6 +31,7 @@ class CanvasDraw(context: Context, attr: AttributeSet?) : View(context, attr) {
     private var lpfY: LowPassFilter = LowPassFilter()
     private var lpfD: LowPassFilter = LowPassFilterHandleRotation()
     private var firstSettingFlag = true
+    private var vibFlag = true
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
@@ -51,8 +54,15 @@ class CanvasDraw(context: Context, attr: AttributeSet?) : View(context, attr) {
     fun setPosition(xp: Float, yp: Float) {
         positionX = lpfX.get((-1f)*xp/scale*height+centerX)
         positionY = lpfY.get(yp/scale*height+centerY)
-        if(positionX == centerX && positionY == centerY) {
-
+        val range = 10f
+        if(positionX <= centerX+range && positionX>= centerX-range && positionY <= centerY+range && positionY >= centerY-range && vibFlag) {
+            val vibrator: Vibrator = context.getSystemService(VIBRATOR_SERVICE) as Vibrator
+            val vibrationEffect: VibrationEffect = VibrationEffect.createOneShot(20, DEFAULT_AMPLITUDE)
+            vibrator.vibrate(vibrationEffect)
+            vibFlag = false
+        }
+        else {
+            vibFlag = true
         }
         // 再描画
         invalidate()
